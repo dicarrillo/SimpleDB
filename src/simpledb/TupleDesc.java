@@ -125,9 +125,17 @@ public class TupleDesc {
      * @return The size (in bytes) of tuples corresponding to this TupleDesc.
      * Note that tuples from a given TupleDesc are of a fixed size.
      */
-    public int getSize() {
-        // some code goes here
-        return 0;
+    public int getSize() 
+    {
+        int totalSize = 0;
+
+        for (int i = 0; i < this.fields.size(); ++i)
+        {
+            // Add byte size of current element to total
+            totalSize += this.fields.get(i).type.getLen();
+        }
+
+        return totalSize;
     }
 
     /**
