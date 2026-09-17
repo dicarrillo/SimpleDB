@@ -146,9 +146,30 @@ public class TupleDesc {
      * @param o the Object to be compared for equality with this TupleDesc.
      * @return true if the object is equal to this TupleDesc.
      */
-    public boolean equals(Object o) {
-        // some code goes here
-        return false;
+    public boolean equals(Object o) 
+    {
+        if (!(o instanceof TupleDesc)) 
+        {   // Object is of the incorrect type
+            return false;
+        }
+
+        // Cast object to TupleDesc type
+        TupleDesc compDesc = (TupleDesc) o;
+
+        if (compDesc.numFields() != this.numFields()) 
+        {   // Incorrect size
+            return false;
+        }
+
+        for (int i = 0; i < this.fields.size(); ++i)
+        {
+            if (!this.fields.get(i).type.equals(compDesc.fields.get(i).type))
+            {   // Incorrect type
+                return false;
+            }
+        }
+
+        return true;
     }
 
     public int hashCode() {
