@@ -172,10 +172,19 @@ public class TupleDesc {
         return true;
     }
 
-    public int hashCode() {
-        // If you want to use TupleDesc as keys for HashMap, implement this so
-        // that equal objects have equals hashCode() results
-        throw new UnsupportedOperationException("unimplemented");
+    // Compute the hash code of a TupleDesc object
+    // Two TupleDesc object's hash codes will be equal if TD1.equals(TD2) is true.
+    public int hashCode() 
+    {
+        int hashValue = 0;
+
+        for (int i = 0; i < this.fields.size(); ++i)
+        {
+            // Update hash value (* 31, + type hash)
+            hashValue = hashValue * 31 + this.fields.get(i).type.hashCode();
+        }
+
+        return hashValue;
     }
 
     /**
