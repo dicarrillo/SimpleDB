@@ -6,6 +6,9 @@ import java.util.*;
  */
 public class TupleDesc {
 
+    // List holding field type-name pairs
+    private ArrayList<TDField> fields = new ArrayList<TDField>();
+
     /**
      * Merge two TupleDescs into one, with td1.numFields + td2.numFields
      * fields, with the first td1.numFields coming from td1 and the remaining
@@ -28,8 +31,13 @@ public class TupleDesc {
      *        this TupleDesc. It must contain at least one entry.
      * @param fieldAr array specifying the names of the fields. Note that names may be null.
      */
-    public TupleDesc(Type[] typeAr, String[] fieldAr) {
-        // some code goes here
+    public TupleDesc(Type[] typeAr, String[] fieldAr) 
+    {
+        for (int i = 0; i < typeAr.length; ++i)
+        {
+            // Add new type-name pair
+            this.fields.add(new TDField(typeAr[i], fieldAr[i]));
+        }
     }
 
     /**
@@ -40,16 +48,20 @@ public class TupleDesc {
      * @param typeAr array specifying the number of and types of fields in
      *        this TupleDesc. It must contain at least one entry.
      */
-    public TupleDesc(Type[] typeAr) {
-        // some code goes here
+    public TupleDesc(Type[] typeAr) 
+    {
+        for (int i = 0; i < typeAr.length; ++i)
+        {
+            // Add new type-name pair with null name
+            this.fields.add(new TDField(typeAr[i], null));
+        }
     }
 
     /**
      * @return the number of fields in this TupleDesc
      */
     public int numFields() {
-        // some code goes here
-        return 0;
+        return this.fields.size();
     }
 
     /**
@@ -59,9 +71,13 @@ public class TupleDesc {
      * @return the name of the ith field
      * @throws NoSuchElementException if i is not a valid field reference.
      */
-    public String getFieldName(int i) throws NoSuchElementException {
-        // some code goes here
-        return null;
+    public String getFieldName(int i) throws NoSuchElementException 
+    {
+        if (i < 0 || i >= this.fields.size()) {
+            throw new NoSuchElementException("Argument index is out of bounds.");
+        }
+
+        return this.fields.get(i).name;
     }
 
     /**
@@ -125,5 +141,18 @@ public class TupleDesc {
     public String toString() {
         // some code goes here
         return "";
+    }
+}
+
+// A TDField object holds the field's type and name
+class TDField
+{
+    Type type;
+    String name;
+
+    TDField(Type type, String name)
+    {
+        this.type = type;
+        this.name = name;
     }
 }
