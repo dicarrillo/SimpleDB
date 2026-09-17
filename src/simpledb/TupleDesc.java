@@ -193,9 +193,20 @@ public class TupleDesc {
      * the exact format does not matter.
      * @return String describing this descriptor.
      */
-    public String toString() {
-        // some code goes here
-        return "";
+    public String toString() 
+    {
+        String finalString = "";
+
+        for (int i = 0; i < this.fields.size(); ++i)
+        {
+            finalString = finalString + this.fields.get(i).type.toString() + "(" + this.fields.get(i).name + ")";
+
+            if (i < this.fields.size() - 1) {
+                finalString += ", ";
+            }
+        }
+
+        return finalString;
     }
 }
 
