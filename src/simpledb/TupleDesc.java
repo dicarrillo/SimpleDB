@@ -112,9 +112,13 @@ public class TupleDesc {
      * @return the type of the ith field
      * @throws NoSuchElementException if i is not a valid field reference.
      */
-    public Type getType(int i) throws NoSuchElementException {
-        // some code goes here
-        return null;
+    public Type getType(int i) throws NoSuchElementException 
+    {
+        if (i < 0 || i >= this.fields.size()) {
+            throw new NoSuchElementException("Argument index is out of bounds.");
+        }
+
+        return this.fields.get(i).type;
     }
 
     /**
