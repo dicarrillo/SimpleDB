@@ -87,9 +87,22 @@ public class TupleDesc {
      * @return the index of the field that is first to have the given name.
      * @throws NoSuchElementException if no field with a matching name is found.
      */
-    public int nameToId(String name) throws NoSuchElementException {
-        // some code goes here
-        return 0;
+    public int nameToId(String name) throws NoSuchElementException 
+    {
+        if (name == null) {
+            throw new NoSuchElementException("Identified name cannot be null.");
+        }
+
+        // Walk through fields list until name is found
+        for (int i = 0; i < this.fields.size(); ++i)
+        {
+            if (name.equals(this.fields.get(i).name))
+            {   // Match found
+                return i;
+            }
+        }
+
+        throw new NoSuchElementException("Identified name not found.");
     }
 
     /**

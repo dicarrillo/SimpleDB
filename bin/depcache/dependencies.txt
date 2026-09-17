@@ -483,6 +483,9 @@ java.lang.Object
 java.lang.invoke.StringConcatFactory
 simpledb.systemtest.AggregateTest
 simpledb.TransactionAbortedException
+||:simpledb.TDField
+simpledb.TDField
+java.lang.Object
 ||:simpledb.DbIterator
 simpledb.DbIterator
 simpledb.DbException
@@ -678,10 +681,14 @@ simpledb.CatalogTest
 org.junit.Assert
 java.util.NoSuchElementException
 ||:simpledb.TupleDesc
+simpledb.TDField
 java.lang.UnsupportedOperationException
 java.lang.Object
 simpledb.TupleDesc
 java.util.NoSuchElementException
+[Lsimpledb.Type;
+[Ljava.lang.String;
+java.util.ArrayList
 ||:simpledb.LogFile
 java.io.RandomAccessFile
 java.lang.Object
