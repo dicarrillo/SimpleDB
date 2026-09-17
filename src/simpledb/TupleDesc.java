@@ -17,9 +17,32 @@ public class TupleDesc {
      * @param td2 The TupleDesc with the last fields of the TupleDesc
      * @return the new TupleDesc
      */
-    public static TupleDesc combine(TupleDesc td1, TupleDesc td2) {
-        // some code goes here
-        return null;
+    public static TupleDesc combine(TupleDesc td1, TupleDesc td2) 
+    {
+        int td1Size = td1.numFields();
+        int td2Size = td2.numFields();
+        int totalFields = td1Size + td2Size;
+
+        // Create common types and name arrays
+        Type[] typesList = new Type[totalFields];
+        String[] namesList = new String[totalFields];
+
+        // Add data from td1
+        for (int i = 0; i < td1Size; ++i)
+        {
+            typesList[i] = td1.getType(i);
+            namesList[i] = td1.getFieldName(i);
+        }
+
+        // Add data from td2
+        for (int i = 0; i < td2Size; ++i)
+        {
+            typesList[i + td1Size] = td2.getType(i);
+            namesList[i] = td2.getFieldName(i);
+        }
+
+        // Create new TupleDesc object with TupleDesc constructor
+        return new TupleDesc(typesList, namesList);
     }
 
     /**
