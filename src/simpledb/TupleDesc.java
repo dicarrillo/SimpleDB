@@ -38,7 +38,7 @@ public class TupleDesc {
         for (int i = 0; i < td2Size; ++i)
         {
             typesList[i + td1Size] = td2.getType(i);
-            namesList[i] = td2.getFieldName(i);
+            namesList[i + td1Size] = td2.getFieldName(i);
         }
 
         // Create new TupleDesc object with TupleDesc constructor
