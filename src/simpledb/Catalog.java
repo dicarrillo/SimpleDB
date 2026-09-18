@@ -12,12 +12,27 @@ import java.util.*;
 
 public class Catalog {
 
-    /**
-     * Constructor.
-     * Creates a new, empty catalog.
-     */
+    private static class TableInfo {
+        final DbFile file;
+        final TupleDesc desc;
+        final String name;
+ 
+        TableInfo(DbFile file, TupleDesc desc, String name) {
+            this.file = file;
+            this.desc = desc;
+            this.name = name;
+        }
+    }
+ 
+    // tableid -> TableInfo
+    private final Map<Integer, TableInfo> tableIdToInfo;
+    // table name -> tableid 
+    private final Map<String, Integer> nameToTableId;
+
+
     public Catalog() {
-        // some code goes here
+        tableIdToInfo = new HashMap<Integer, TableInfo>();
+        nameToTableId = new HashMap<String, Integer>();
     }
 
     /**
@@ -31,7 +46,15 @@ public class Catalog {
      * conflict exists, use the last table to be added as the table for a given name.
      */
     public void addTable(DbFile file, TupleDesc t, String name) {
-        // some code goes here
+        if (name == null) {
+            throw new IllegalArgumentException("table name may not be null");
+        }
+ 
+        int id = file.id();
+ 
+        // Last table added with a given name wins the name -> id mapping.
+        tableIdToInfo.put(id, new TableInfo(file, t, name));
+        nameToTableId.put(name, id);
     }
 
     /**
@@ -50,9 +73,11 @@ public class Catalog {
      * Return the id of the table with a specified name,
      * @throws NoSuchElementException if the table doesn't exist
      */
-    public int getTableId(String name) {
-        // some code goes here
-        return 0;
+    public int getTableId(String name) throws NoSuchElementException {
+        if (name == null || !nameToTableId.containsKey(name)) {
+            throw new NoSuchElementException("no table named " + name);
+        }
+        return nameToTableId.get(name);
     }
 
     /**
@@ -61,8 +86,11 @@ public class Catalog {
      *     function passed to addTable
      */
     public TupleDesc getTupleDesc(int tableid) throws NoSuchElementException {
-        // some code goes here
-        return null;
+        TableInfo info = tableIdToInfo.get(tableid);
+        if (info == null) {
+            throw new NoSuchElementException("no table with id " + tableid);
+        }
+        return info.desc;
     }
 
     /**
@@ -72,12 +100,17 @@ public class Catalog {
      *     function passed to addTable
      */
     public DbFile getDbFile(int tableid) throws NoSuchElementException {
-        // some code goes here
-        return null;
+        TableInfo info = tableIdToInfo.get(tableid);
+        if (info == null) {
+            throw new NoSuchElementException("no table with id " + tableid);
+        }
+        return info.file;
     }
 
     /** Delete all tables from the catalog */
     public void clear() {
-        // some code goes here
+        tableIdToInfo.clear();
+        nameToTableId.clear();
     }
+
 }
