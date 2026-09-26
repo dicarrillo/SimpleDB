@@ -1,8 +1,12 @@
-package simpledb;
 
+package simpledb;
+ 
 /** Unique identifier for HeapPage objects. */
 public class HeapPageId implements PageId {
-
+ 
+    private final int tableId;
+    private final int pgNo;
+ 
     /**
      * Constructor. Create a page id structure for a specific page of a
      * specific table.
@@ -11,24 +15,23 @@ public class HeapPageId implements PageId {
      * @param pgNo The page number in that table.
      */
     public HeapPageId(int tableId, int pgNo) {
-        // some code goes here
+        this.tableId = tableId;
+        this.pgNo = pgNo;
     }
-
+ 
     /** @return the table associated with this PageId */
     public int tableid() {
-        // some code goes here
-        return 0;
+        return tableId;
     }
-
+ 
     /**
      * @return the page number in the table tableid() associated with
      *   this PageId
      */
     public int pageno() {
-        // some code goes here
-        return 0;
+        return pgNo;
     }
-
+ 
     /**
      * @return a hash code for this page, represented by the concatenation of
      *   the table number and the page number (needed if a PageId is used as a
@@ -36,10 +39,15 @@ public class HeapPageId implements PageId {
      * @see BufferPool
      */
     public int hashCode() {
-        // some code goes here
-        throw new UnsupportedOperationException("implement this");
+        // Simple, deterministic combination of the two fields.
+        // Using a small prime multiplier keeps distinct (tableId, pgNo)
+        // pairs from colliding as often as naive addition would.
+        int result = 17;
+        result = 31 * result + tableId;
+        result = 31 * result + pgNo;
+        return result;
     }
-
+ 
     /**
      * Compares one PageId to another.
      *
@@ -48,8 +56,14 @@ public class HeapPageId implements PageId {
      *   ids are the same)
      */
     public boolean equals(Object o) {
-        // some code goes here
-        return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof PageId)) {
+            return false;
+        }
+        PageId other = (PageId) o;
+        return this.tableId == other.tableid() && this.pgNo == other.pageno();
     }
 
     /**
