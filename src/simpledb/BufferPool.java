@@ -1,6 +1,8 @@
 package simpledb;
 
 import java.io.*;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * BufferPool manages the reading and writing of pages into memory from
@@ -16,13 +18,16 @@ public class BufferPool {
     public static final int PAGE_SIZE = 4096;
     public static final int DEFAULT_PAGES = 100;
 
+    private final int numPages;
+    private final Map<PageId, Page> pages = new HashMap<PageId, Page>();
+
     /**
      * Constructor.
      *
      * @param numPages number of pages in this buffer pool
      */
     public BufferPool(int numPages) {
-        // some code goes here
+        this.numPages = numPages;
     }
 
     /**
@@ -42,8 +47,16 @@ public class BufferPool {
      */
     public synchronized Page getPage(TransactionId tid, PageId pid, Permissions perm)
         throws TransactionAbortedException, DbException {
-        // some code goes here
-        return null;
+        Page page = pages.get(pid);
+        if (page != null) {
+            return page;
+        }
+        if (pages.size() >= numPages) {
+            evictPage();
+        }
+        page = Database.getCatalog().getDbFile(pid.tableid()).readPage(pid);
+        pages.put(pid, page);
+        return page;
     }
 
     /**

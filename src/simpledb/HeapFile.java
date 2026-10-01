@@ -20,16 +20,18 @@ public class HeapFile implements DbFile {
      *
      * @param f The file that stores the on-disk backing store for this DbFile.
      */
+
+    private final File f;
+
     public HeapFile(File f) {
-        // some code goes here
+        this.f = f;
     }
 
     /**
      * Return a Java File corresponding to the data from this HeapFile on disk.
      */
     public File getFile() {
-        // some code goes here
-        return null;
+        return f;
     }
 
     /**
@@ -42,16 +44,22 @@ public class HeapFile implements DbFile {
      *    )
      */
     public int id() {
-        // some code goes here
-        throw new UnsupportedOperationException("implement this");
+        return f.getAbsoluteFile().hashCode();
+        // throw new UnsupportedOperationException("implement this");
     }
 
     /**
      * Returns a Page from the file.
      */
     public Page readPage(PageId pid) throws NoSuchElementException {
-        // some code goes here
-        return null;
+        byte[] data = new byte[bytesPerPage()];
+        try (RandomAccessFile raf = new RandomAccessFile(f, "r")) {
+            raf.seek((long) pid.pageno() * bytesPerPage());
+            raf.readFully(data);
+            return new HeapPage((HeapPageId) pid, data);
+        } catch (IOException e) {
+            throw new NoSuchElementException("Could not read page " + pid.pageno() + " from file.");
+        }
     }
 
     /**
@@ -65,8 +73,7 @@ public class HeapFile implements DbFile {
      * Returns the number of pages in this HeapFile.
      */
     public int numPages() {
-        // some code goes here
-        return 0;
+        return (int) (f.length() / bytesPerPage());
     }
 
     /**
@@ -98,17 +105,59 @@ public class HeapFile implements DbFile {
      * to iterate through pages.
      */
     public DbFileIterator iterator(TransactionId tid) {
-        // some code goes here
-        return null;
-    }
+        return new DbFileIterator() {
+            private int pageNo = 0;
+            private Iterator<Tuple> it = null;
+            private boolean open = false;
 
+            public void open() throws DbException, TransactionAbortedException {
+                open = true;
+                pageNo = 0;
+                it = loadPage(0);
+            }
+
+            private Iterator<Tuple> loadPage(int n)
+                    throws DbException, TransactionAbortedException {
+                HeapPageId pid = new HeapPageId(id(), n);
+                HeapPage p = (HeapPage) Database.getBufferPool()
+                        .getPage(tid, pid, Permissions.READ_ONLY);
+                return p.iterator();
+            }
+
+            public boolean hasNext() throws DbException, TransactionAbortedException {
+                if (!open) return false;
+                while (!it.hasNext() && pageNo + 1 < numPages()) {
+                    pageNo++;
+                    it = loadPage(pageNo);
+                }
+                return it.hasNext();
+            }
+
+            public Tuple next() throws DbException, TransactionAbortedException,
+                    NoSuchElementException {
+                if (!hasNext()) throw new NoSuchElementException();
+                return it.next();
+            }
+
+            public void rewind() throws DbException, TransactionAbortedException {
+                close();
+                open();
+            }
+
+            public void close() {
+                open = false;
+                it = null;
+            }
+        };
+    }
     /**
      * @return the number of bytes on a page, including the number of bytes
      * in the header.
      */
     public int bytesPerPage() {
-        // some code goes here
-        return 0;
+        int numSlots = BufferPool.PAGE_SIZE / Database.getCatalog().getTupleDesc(id()).getSize();
+        int headerBytes = (numSlots / 32 + 1) * 4;
+        return BufferPool.PAGE_SIZE + headerBytes;
     }
 }
 
