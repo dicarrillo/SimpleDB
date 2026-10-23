@@ -1,12 +1,18 @@
 package simpledb;
 
-/** Predicate compares tuples to a specified Field value.
+/**
+ * Predicate compares tuples to a specified Field value.
  */
 public class Predicate {
 
     /** Constants used for return codes in Field.compare */
     public enum Op {
-        EQUALS, GREATER_THAN, LESS_THAN, LESS_THAN_OR_EQ, GREATER_THAN_OR_EQ, LIKE;
+        EQUALS,
+        GREATER_THAN,
+        LESS_THAN,
+        LESS_THAN_OR_EQ,
+        GREATER_THAN_OR_EQ,
+        LIKE;
 
         /**
          * Interface to access operations by a string containing an integer
@@ -29,37 +35,42 @@ public class Predicate {
         }
     }
 
+    // Instance variables
+    private final int field;
+    private final Op op;
+    private final Field operand;
+
     /**
      * Constructor.
      *
-     * @param field field number of passed in tuples to compare against.
+     * @param field field number of passed in tuples to compare against
      * @param op operation to use for comparison
      * @param operand field value to compare passed in tuples to
      */
     public Predicate(int field, Op op, Field operand) {
-        // some code goes here
+        this.field = field;
+        this.op = op;
+        this.operand = operand;
     }
 
     /**
      * Compares the field number of t specified in the constructor to the
-     * operand field specified in the constructor using the operator specific
-     * in the constructor.  The comparison can be made through Field's
-     * compare method.
+     * operand field specified in the constructor using the operator specified
+     * in the constructor.
      *
      * @param t The tuple to compare against
      * @return true if the comparison is true, false otherwise.
      */
     public boolean filter(Tuple t) {
-        // some code goes here
-        return false;
+        Field tupleField = t.getField(field);
+        return tupleField.compare(op, operand);
     }
 
     /**
-     * Returns something useful, like
-     * "f = field_id op = op_string operand = operand_string
+     * Returns a readable string representation of the predicate.
      */
+    @Override
     public String toString() {
-        // some code goes here
-        return "";
+        return "f = " + field + " op = " + op + " operand = " + operand;
     }
 }
