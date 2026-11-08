@@ -6,37 +6,95 @@ import java.util.*;
  */
 public class Join extends AbstractDbIterator {
 
+    // Private instance variables
+    private JoinPredicate predicate;
+    private DbIterator child1;
+    private DbIterator child2;
+    private TupleDesc joinDesc;
+
+    // Variable to track left tuple for outer readNext() loop
+    private Tuple currLeftTuple = null;
+
     /**
-     * Constructor.  Accepts to children to join and the predicate
+     * Combine two tuples into a single, glued tuple
+     * 
+     * @param tuple1 left tuple to combine
+     * @param tuple2 right tuple to combine
+     * @return single, combined tuple
+     */
+    private Tuple combineTuples(Tuple tuple1, Tuple tuple2)
+    {
+        Tuple combinedTuple = new Tuple(this.joinDesc);
+
+        // Get the number of fields in each tuple
+        int t1FieldCount = tuple1.getTupleDesc().numFields();
+        int t2FieldCount = tuple2.getTupleDesc().numFields();
+
+        // Set left side fields
+        for (int i = 0; i < t1FieldCount; ++i) {
+            combinedTuple.setField(i, tuple1.getField(i));
+        }
+
+        // Set right side fields
+        for (int i = 0; i < t2FieldCount; ++i) {
+            combinedTuple.setField(i + t1FieldCount, tuple2.getField(i));
+        }
+
+        return combinedTuple;
+    }
+
+    /**
+     * Constructor.  Accepts two children to join and the predicate
      * to join them on
      *
      * @param p The predicate to use to join the children
      * @param child1 Iterator for the left(outer) relation to join
      * @param child2 Iterator for the right(inner) relation to join
      */
-    public Join(JoinPredicate p, DbIterator child1, DbIterator child2) {
-        // some code goes here
+    public Join(JoinPredicate p, DbIterator child1, DbIterator child2) 
+    {
+        this.predicate = p;
+        this.child1 = child1;
+        this.child2 = child2;
+
+        // Set description for joined columns
+        this.joinDesc = TupleDesc.combine(child1.getTupleDesc(), child2.getTupleDesc());
     }
 
     /**
-     * @see simpledb.TupleDesc#combine(TupleDesc, TupleDesc) for possible implementation logic.
+     * Get the TupleDesc object for this join
      */
-    public TupleDesc getTupleDesc() {
-        // some code goes here
-        return null;
+    public TupleDesc getTupleDesc() 
+    {
+        return this.joinDesc;
     }
 
-    public void open()
-        throws DbException, NoSuchElementException, TransactionAbortedException {
-        // some code goes here
+    public void open() throws DbException, NoSuchElementException, TransactionAbortedException 
+    {   // Open children for iteration
+        this.child1.open();
+        this.child2.open();
     }
 
-    public void close() {
-        // some code goes here
+    public void close() 
+    {
+        // Call abstract iterator close
+        super.close();
+
+        // Close children iterators
+        this.child1.close();
+        this.child2.close();
+
+        // Reset left tuple
+        this.currLeftTuple = null;
     }
 
-    public void rewind() throws DbException, TransactionAbortedException {
-        // some code goes here
+    public void rewind() throws DbException, TransactionAbortedException 
+    {   // Rewind child iterators
+        child1.rewind();
+        child2.rewind();
+
+        // Reset left tuple
+        this.currLeftTuple = null;
     }
 
     /**
@@ -57,8 +115,35 @@ public class Join extends AbstractDbIterator {
      * @return The next matching tuple.
      * @see JoinPredicate#filter
      */
-    protected Tuple readNext() throws TransactionAbortedException, DbException {
-        // some code goes here
-        return null;
+    protected Tuple readNext() throws TransactionAbortedException, DbException 
+    {
+        while (true)
+        {
+            if (currLeftTuple == null)
+            {   // Get the next left tuple for outer loop
+
+                if (!child1.hasNext())
+                {   // No more tuples to return
+                    return null;
+                }
+
+                currLeftTuple = child1.next();
+            }
+
+            // Compare current left tuple to every right tuple
+            while (child2.hasNext())
+            {
+                Tuple currRightTuple = child2.next();
+
+                if (predicate.filter(currLeftTuple, currRightTuple))
+                {   // Predicate applies to current tuples; return join
+                    return combineTuples(currLeftTuple, currRightTuple);
+                }
+            }
+
+            // Reset right child iterator and clear current left tuple
+            child2.rewind();
+            currLeftTuple = null;
+        }
     }
 }
