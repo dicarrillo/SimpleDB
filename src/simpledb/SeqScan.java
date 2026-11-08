@@ -8,6 +8,13 @@ import java.util.*;
  */
 public class SeqScan implements DbIterator {
 
+    private final TransactionId tid;
+    private final int tableid;
+    private final String tableAlias;
+
+    // Iterator over the underlying DbFile; null until open() is called
+    private DbFileIterator it = null;
+
     /**
      * Constructor.
      * Creates a sequential scan over the specified table as a part of the
@@ -22,7 +29,9 @@ public class SeqScan implements DbIterator {
      *         name can be null.fieldName, tableAlias.null, or null.null).
      */
     public SeqScan(TransactionId tid, int tableid, String tableAlias) {
-        // some code goes here
+        this.tid = tid;
+        this.tableid = tableid;
+        this.tableAlias = tableAlias;
     }
 
     /**
@@ -31,7 +40,8 @@ public class SeqScan implements DbIterator {
      */
     public void open()
         throws DbException, TransactionAbortedException {
-        // some code goes here
+        it = Database.getCatalog().getDbFile(tableid).iterator(tid);
+        it.open();
     }
 
     /**
@@ -40,31 +50,49 @@ public class SeqScan implements DbIterator {
      *   names prefaced by the passed in tableAlias string
      */
     public TupleDesc getTupleDesc() {
-        // some code goes here
-        return null;
+        TupleDesc base = Database.getCatalog().getTupleDesc(tableid);
+        int n = base.numFields();
+
+        Type[] types = new Type[n];
+        String[] names = new String[n];
+        for (int i = 0; i < n; ++i) {
+            types[i] = base.getType(i);
+            // String concatenation turns a null alias/name into "null",
+            // giving null.fieldName / tableAlias.null / null.null as allowed above.
+            names[i] = tableAlias + "." + base.getFieldName(i);
+        }
+        return new TupleDesc(types, names);
     }
 
     public boolean hasNext() throws TransactionAbortedException, DbException {
-        // some code goes here
-        return false;
+        if (it == null) {
+            return false;
+        }
+        return it.hasNext();
     }
 
     /**
      * Implementation of DbIterator.getNext method.
-     * Return the next tuple in the scan, or null if there are no more tuples.
+     * Return the next tuple in the scan.
      *
+     * @throws NoSuchElementException if there are no more tuples (or the scan is not open)
      */
     public Tuple next()
         throws NoSuchElementException, TransactionAbortedException, DbException {
-        // some code goes here
-        return null;
+        if (it == null) {
+            throw new NoSuchElementException("SeqScan is not open");
+        }
+        return it.next();
     }
 
     /**
      * Closes the sequential scan.
      */
     public void close() {
-        // some code goes here
+        if (it != null) {
+            it.close();
+            it = null;
+        }
     }
 
     /**
@@ -72,6 +100,9 @@ public class SeqScan implements DbIterator {
      */
     public void rewind()
         throws DbException, NoSuchElementException, TransactionAbortedException {
-        // some code goes here
+        if (it == null) {
+            throw new IllegalStateException("SeqScan is not open");
+        }
+        it.rewind();
     }
 }
