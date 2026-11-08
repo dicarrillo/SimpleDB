@@ -265,7 +265,6 @@ java.io.IOException
 java.util.NoSuchElementException
 simpledb.TransactionAbortedException
 ||:simpledb.HeapPageId
-java.lang.UnsupportedOperationException
 simpledb.HeapPageId
 java.lang.Object
 simpledb.PageId
