@@ -52,6 +52,17 @@ public class Catalog {
  
         int id = file.id();
  
+        TableInfo old = tableIdToInfo.get(id);
+
+        if (old != null) 
+        {   // Drop old name
+            Integer oldId = nameToTableId.get(old.name);
+            
+            if (oldId != null && oldId == id) {
+                nameToTableId.remove(old.name);
+            }
+        }
+
         // Last table added with a given name wins the name -> id mapping.
         tableIdToInfo.put(id, new TableInfo(file, t, name));
         nameToTableId.put(name, id);

@@ -113,7 +113,13 @@ public class HeapFile implements DbFile {
             public void open() throws DbException, TransactionAbortedException {
                 open = true;
                 pageNo = 0;
-                it = loadPage(0);
+                if (numPages() > 0) {
+                    it = loadPage(0);
+                } 
+                else 
+                {   // Empty file, nothing to read
+                    it = Collections.<Tuple>emptyList().iterator();
+                }
             }
 
             private Iterator<Tuple> loadPage(int n)

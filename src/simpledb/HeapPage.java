@@ -272,7 +272,8 @@ public class HeapPage implements Page {
                 list.add(tuples[i]);
             }
         }
-        return list.iterator();
+        
+        return Collections.unmodifiableList(list).iterator();
     }
 
 }
